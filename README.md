@@ -1,97 +1,152 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Kingdom Notes
 
-# Getting Started
+**Capture • Preserve • Grow Through God's Word**
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+Kingdom Notes is a simple, offline-first mobile journal for saving church teachings, sermon notes, prayers, and confessions.
 
-## Step 1: Start Metro
+**Repository:** [github.com/cocolbk/Kingdom-Notes](https://github.com/cocolbk/Kingdom-Notes)
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## Features
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+- **Teaching Notes** — Add, edit, and delete teaching entries
+- **Favorites** — Star teachings for quick access
+- **Search** — Find notes by title, pastor, scripture, date, or content
+- **Prayer Journal** — All prayers from your teachings in one place
+- **Confession Library** — Your personal library of faith confessions
+- **Daily Confession** — Rotating confession card on the home screen
+- **Recent Teachings** — Latest teachings at a glance
+- **Offline Storage** — All data saved locally on your device
 
-```sh
-# Using npm
-npm start
+## Each Teaching Includes
 
-# OR using Yarn
-yarn start
+| Field | Description |
+|-------|-------------|
+| Title | Sermon or teaching title |
+| Pastor Name | Who preached the message |
+| Date | When the teaching was received |
+| Scripture References | Bible passages referenced |
+| Main Teaching Notes | Key points and insights |
+| Prayer | Personal or altar prayers |
+| Confession | Faith confessions to declare |
+
+## Tech Stack
+
+- React Native UI (via react-native-web)
+- TypeScript
+- Vite (web build)
+- Capacitor 6 (Android packaging)
+- React Navigation
+- AsyncStorage (offline-first, no backend)
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 22+
+- Android SDK (API 34+) for APK builds
+- JDK 17+
+
+### Install
+
+```bash
+npm install
 ```
 
-## Step 2: Build and run your app
+### Web Development
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
-
-```sh
-# Using npm
-npm run android
-
-# OR using Yarn
-yarn android
+```bash
+npm run dev
 ```
 
-### iOS
+Open the local URL shown in the terminal to preview the app in your browser.
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+### Capacitor Android Workflow
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+1. Build the web bundle and sync to Android:
 
-```sh
-bundle install
+```bash
+npm run cap:sync
 ```
 
-Then, and every time you update your native dependencies, run:
+2. Open in Android Studio (optional):
 
-```sh
-bundle exec pod install
+```bash
+npm run cap:open:android
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+3. Build a debug APK:
 
-```sh
-# Using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
+```bash
+npm run build:android:debug
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+4. Build a release APK:
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+```bash
+npm run build:android
+```
 
-## Step 3: Modify your app
+### APK Output Paths
 
-Now that you have successfully run the app, let's make changes!
+| Build | Output |
+|-------|--------|
+| Debug | `android-cap/app/build/outputs/apk/debug/app-debug.apk` |
+| Release | `android-cap/app/build/outputs/apk/release/app-release-unsigned.apk` |
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+### Android SDK Setup
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+Copy `android-cap/local.properties.template` to `android-cap/local.properties` and set your SDK path:
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+```properties
+sdk.dir=C:/Users/YourName/AppData/Local/Android/Sdk
+```
 
-## Congratulations! :tada:
+Or set the `ANDROID_HOME` environment variable.
 
-You've successfully run and modified your React Native App. :partying_face:
+### Generate App Icons
 
-### Now what?
+```bash
+npm run generate:assets
+```
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+## Project Structure
 
-# Troubleshooting
+```
+Kingdom-Notes/
+├── android-cap/          # Capacitor Android project (APK builds)
+├── android/              # React Native Android project (optional)
+├── src/
+│   ├── components/       # Reusable UI components
+│   ├── context/          # TeachingContext (state + storage)
+│   ├── navigation/       # App navigator
+│   ├── screens/          # All app screens
+│   ├── storage/          # AsyncStorage helpers
+│   ├── theme/            # Colors, typography, spacing
+│   ├── types/            # TypeScript interfaces
+│   └── utils/            # Date formatting, search helpers
+├── App.tsx               # Root component
+├── capacitor.config.ts   # Capacitor configuration
+├── index.html            # Web entry HTML
+├── vite.config.ts        # Vite bundler config
+└── package.json
+```
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+## App Details
 
-# Learn More
+| Setting | Value |
+|---------|-------|
+| App Name | Kingdom Notes |
+| Package Name | `com.kingdomnotes.app` |
+| Tagline | Capture • Preserve • Grow Through God's Word |
+| Storage | AsyncStorage (on-device) |
+| Network | Offline-first |
 
-To learn more about React Native, take a look at the following resources:
+## Design
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+- **Primary** — Deep navy (`#1B3A4B`)
+- **Accent** — Gold (`#C9A227`)
+- **Background** — Warm cream (`#F7F4EF`)
+
+## License
+
+Private project for personal spiritual journaling.

@@ -1,24 +1,45 @@
 {
-  "name": "com.kingdomnotes.app",
-  "version": "0.0.1",
+  "name": "kingdom-notes",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
+    "dev": "vite",
+    "build:web": "vite build",
+    "preview": "vite preview",
+    "start": "react-native start",
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "lint": "eslint .",
-    "start": "react-native start",
-    "test": "jest"
+    "test": "jest",
+    "generate:assets": "node scripts/generate-assets.js",
+    "build:android:rn": "cd android-rn && gradlew.bat assembleRelease",
+    "build:android:rn:bundle": "cd android-rn && gradlew.bat bundleRelease",
+    "cap:sync": "npm run build:web && npx cap sync",
+    "cap:open:android": "npx cap open android",
+    "build:android": "npm run cap:sync && cd android-cap && gradlew.bat assembleRelease",
+    "build:android:debug": "npm run cap:sync && cd android-cap && gradlew.bat assembleDebug"
   },
   "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/core": "^6.2.0",
+    "@capacitor/splash-screen": "^6.0.3",
+    "@capacitor/status-bar": "^6.0.2",
+    "@react-native-async-storage/async-storage": "^2.2.0",
+    "@react-navigation/bottom-tabs": "^7.3.14",
+    "@react-navigation/native": "^7.1.10",
+    "@react-navigation/native-stack": "^7.3.14",
     "react": "19.2.3",
+    "react-dom": "19.2.3",
     "react-native": "0.85.3",
-    "@react-native/new-app-screen": "0.85.3",
-    "react-native-safe-area-context": "^5.5.2"
+    "react-native-safe-area-context": "^5.5.2",
+    "react-native-screens": "^4.11.1",
+    "react-native-web": "^0.21.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@babel/preset-env": "^7.25.3",
     "@babel/runtime": "^7.25.0",
+    "@capacitor/cli": "^6.2.0",
     "@react-native-community/cli": "20.1.0",
     "@react-native-community/cli-platform-android": "20.1.0",
     "@react-native-community/cli-platform-ios": "20.1.0",
@@ -29,12 +50,16 @@
     "@react-native/typescript-config": "0.85.3",
     "@types/jest": "^29.5.13",
     "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
     "@types/react-test-renderer": "^19.1.0",
+    "@vitejs/plugin-react": "^4.5.2",
     "eslint": "^8.19.0",
     "jest": "^29.6.3",
+    "pngjs": "^7.0.0",
     "prettier": "2.8.8",
     "react-test-renderer": "19.2.3",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5"
   },
   "engines": {
     "node": ">= 22.11.0"

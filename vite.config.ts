@@ -1,0 +1,36 @@
+﻿import {defineConfig} from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+
+export default defineConfig({
+  plugins: [react()],
+  base: './',
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+  },
+  resolve: {
+    alias: {
+      'react-native': 'react-native-web',
+      '@': path.resolve(__dirname, './src'),
+    },
+    extensions: [
+      '.web.tsx',
+      '.web.ts',
+      '.web.jsx',
+      '.web.js',
+      '.tsx',
+      '.ts',
+      '.jsx',
+      '.js',
+    ],
+  },
+  define: {
+    global: 'window',
+    __DEV__: JSON.stringify(process.env.NODE_ENV !== 'production'),
+  },
+  server: {
+    port: 5173,
+    host: true,
+  },
+});

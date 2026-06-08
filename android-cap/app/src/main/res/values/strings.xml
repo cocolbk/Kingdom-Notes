@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Kingdom Notes</string>
+    <string name="title_activity_main">Kingdom Notes</string>
+    <string name="package_name">com.kingdomnotes.app</string>
+    <string name="custom_url_scheme">com.kingdomnotes.app</string>
+</resources>
