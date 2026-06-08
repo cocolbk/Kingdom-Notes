@@ -1,91 +1,117 @@
-import React, {useMemo, useState} from 'react';
-import {Alert, StyleSheet, Text, View} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {useTeachings} from '../context/TeachingContext';
-import {SearchInput} from '../components/SearchInput';
-import {TeachingList} from '../components/TeachingList';
-import {RootStackParamList} from '../navigation/types';
-import {searchTeachings} from '../utils/search';
-import {colors} from '../theme/colors';
-import {spacing} from '../theme/spacing';
-import {typography} from '../theme/typography';
+import React, { useEffect, useState } from 'react'
+import {
+  View,
+  StyleSheet,
+  SafeAreaView,
+} from 'react-native'
+import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { SearchBar } from '../components/SearchBar'
+import { TeachingList } from '../components/TeachingList'
+import { Teaching } from '../types/teaching'
+import { getTeachings, deleteTeaching, toggleFavorite } from '../utils/storage'
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+type RootStackParamList = {
+  Home: undefined
+  Search: undefined
+  EditTeaching: { teaching: Teaching }
+  ViewTeaching: { teaching: Teaching }
+}
 
-export function SearchScreen() {
-  const navigation = useNavigation<NavigationProp>();
-  const insets = useSafeAreaInsets();
-  const {teachings, toggleFavorite, deleteTeaching} = useTeachings();
-  const [query, setQuery] = useState('');
+type Props = NativeStackScreenProps<RootStackParamList, 'Search'>
 
-  const results = useMemo(
-    () => searchTeachings(teachings, query),
-    [teachings, query],
-  );
+export const SearchScreen: React.FC<Props> = ({ navigation }) => {
+  const [allTeachings, setAllTeachings] = useState<Teaching[]>([])
+  const [searchResults, setSearchResults] = useState<Teaching[]>([])
+  const [searchQuery, setSearchQuery] = useState('')
 
-  const handleDelete = (id: string) => {
-    Alert.alert(
-      'Delete Teaching',
-      'Are you sure you want to permanently delete this teaching?',
-      [
-        {text: 'Cancel', style: 'cancel'},
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => deleteTeaching(id),
-        },
-      ],
-    );
-  };
+  useEffect(() => {
+    loadTeachings()
+  }, [])
+
+  const loadTeachings = async () => {
+    try {
+      const data = await getTeachings()
+      setAllTeachings(data)
+      setSearchResults(data)
+    } catch (error) {
+      console.error('Error loading teachings:', error)
+    }
+  }
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query)
+    if (!query.trim()) {
+      setSearchResults(allTeachings)
+      return
+    }
+
+    const lowerQuery = query.toLowerCase()
+    const filtered = allTeachings.filter(
+      (teaching) =>
+        teaching.title.toLowerCase().includes(lowerQuery) ||
+        teaching.pastorName.toLowerCase().includes(lowerQuery) ||
+        teaching.scriptureReference.toLowerCase().includes(lowerQuery) ||
+        teaching.date.includes(query) ||
+        teaching.mainTeachingNotes.toLowerCase().includes(lowerQuery)
+    )
+    setSearchResults(filtered)
+  }
+
+  const handleDeleteTeaching = async (id: string) => {
+    try {
+      await deleteTeaching(id)
+      await loadTeachings()
+    } catch (error) {
+      console.error('Error deleting teaching:', error)
+    }
+  }
+
+  const handleToggleFavorite = async (id: string) => {
+    try {
+      await toggleFavorite(id)
+      await loadTeachings()
+    } catch (error) {
+      console.error('Error toggling favorite:', error)
+    }
+  }
+
+  const useFocusEffect = () => {
+    React.useEffect(() => {
+      const unsubscribe = navigation.addListener('focus', () => {
+        loadTeachings()
+      })
+      return unsubscribe
+    }, [navigation])
+  }
+
+  useFocusEffect()
 
   return (
-    <View style={[styles.container, {paddingTop: insets.top}]}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Search</Text>
-        <Text style={styles.subtitle}>
-          Filter by title, pastor, scripture, or date
-        </Text>
-        <SearchInput value={query} onChangeText={setQuery} />
-      </View>
+    <SafeAreaView style={styles.container}>
+      <SearchBar
+        value={searchQuery}
+        onChangeText={handleSearch}
+        onClear={() => handleSearch('')}
+      />
 
       <TeachingList
-        teachings={results}
-        onPress={teaching =>
-          navigation.navigate('AddTeaching', {teachingId: teaching.id})
+        teachings={searchResults}
+        onSelectTeaching={(teaching) =>
+          navigation.navigate('ViewTeaching', { teaching })
         }
-        onToggleFavorite={toggleFavorite}
-        onDelete={handleDelete}
-        emptyTitle={query.trim() ? 'No results found' : 'Search your teachings'}
-        emptyMessage={
-          query.trim()
-            ? 'Try different keywords or check your spelling.'
-            : 'Enter a keyword to find sermon notes quickly.'
+        onEditTeaching={(teaching) =>
+          navigation.navigate('EditTeaching', { teaching })
         }
-        contentPaddingBottom={32}
+        onDeleteTeaching={handleDeleteTeaching}
+        onToggleFavorite={handleToggleFavorite}
       />
-    </View>
-  );
+    </SafeAreaView>
+  )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#F5F5F5',
   },
-  header: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.md,
-  },
-  title: {
-    ...typography.h1,
-    color: colors.primary,
-    marginBottom: spacing.xs,
-  },
-  subtitle: {
-    ...typography.bodySmall,
-    color: colors.textMuted,
-    marginBottom: spacing.lg,
-  },
-});
+})

@@ -1,78 +1,135 @@
-import React from 'react';
-import {Alert, StyleSheet, Text, View} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {useTeachings} from '../context/TeachingContext';
-import {TeachingList} from '../components/TeachingList';
-import {RootStackParamList} from '../navigation/types';
-import {colors} from '../theme/colors';
-import {spacing} from '../theme/spacing';
-import {typography} from '../theme/typography';
+import React, { useEffect, useState } from 'react'
+import {
+  View,
+  StyleSheet,
+  SafeAreaView,
+  Text,
+} from 'react-native'
+import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { TeachingList } from '../components/TeachingList'
+import { Teaching } from '../types/teaching'
+import { getTeachings, deleteTeaching, toggleFavorite } from '../utils/storage'
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+type RootStackParamList = {
+  Home: undefined
+  Favorites: undefined
+  EditTeaching: { teaching: Teaching }
+  ViewTeaching: { teaching: Teaching }
+}
 
-export function FavoritesScreen() {
-  const navigation = useNavigation<NavigationProp>();
-  const insets = useSafeAreaInsets();
-  const {favoriteTeachings, toggleFavorite, deleteTeaching} = useTeachings();
+type Props = NativeStackScreenProps<RootStackParamList, 'Favorites'>
 
-  const handleDelete = (id: string) => {
-    Alert.alert(
-      'Delete Teaching',
-      'Are you sure you want to permanently delete this teaching?',
-      [
-        {text: 'Cancel', style: 'cancel'},
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => deleteTeaching(id),
-        },
-      ],
-    );
-  };
+export const FavoritesScreen: React.FC<Props> = ({ navigation }) => {
+  const [favorites, setFavorites] = useState<Teaching[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    loadFavorites()
+  }, [])
+
+  const loadFavorites = async () => {
+    try {
+      const data = await getTeachings()
+      const favs = data.filter((teaching) => teaching.isFavorite)
+      setFavorites(favs.sort((a, b) => b.createdAt - a.createdAt))
+    } catch (error) {
+      console.error('Error loading favorites:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDeleteTeaching = async (id: string) => {
+    try {
+      await deleteTeaching(id)
+      await loadFavorites()
+    } catch (error) {
+      console.error('Error deleting teaching:', error)
+    }
+  }
+
+  const handleToggleFavorite = async (id: string) => {
+    try {
+      await toggleFavorite(id)
+      await loadFavorites()
+    } catch (error) {
+      console.error('Error toggling favorite:', error)
+    }
+  }
+
+  const useFocusEffect = () => {
+    React.useEffect(() => {
+      const unsubscribe = navigation.addListener('focus', () => {
+        loadFavorites()
+      })
+      return unsubscribe
+    }, [navigation])
+  }
+
+  useFocusEffect()
 
   return (
-    <View style={[styles.container, {paddingTop: insets.top}]}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>★ Favorites</Text>
-        <Text style={styles.subtitle}>
-          {favoriteTeachings.length} starred teaching
-          {favoriteTeachings.length !== 1 ? 's' : ''}
-        </Text>
+        <Text style={styles.title}>Favorite Teachings</Text>
       </View>
 
-      <TeachingList
-        teachings={favoriteTeachings}
-        onPress={teaching =>
-          navigation.navigate('AddTeaching', {teachingId: teaching.id})
-        }
-        onToggleFavorite={toggleFavorite}
-        onDelete={handleDelete}
-        emptyTitle="No favorites yet"
-        emptyMessage="Tap the star on any teaching card to save it here."
-        contentPaddingBottom={32}
-      />
-    </View>
-  );
+      {favorites.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No favorite teachings yet</Text>
+          <Text style={styles.emptySubtext}>
+            Star teachings to add them to your favorites
+          </Text>
+        </View>
+      ) : (
+        <TeachingList
+          teachings={favorites}
+          onSelectTeaching={(teaching) =>
+            navigation.navigate('ViewTeaching', { teaching })
+          }
+          onEditTeaching={(teaching) =>
+            navigation.navigate('EditTeaching', { teaching })
+          }
+          onDeleteTeaching={handleDeleteTeaching}
+          onToggleFavorite={handleToggleFavorite}
+        />
+      )}
+    </SafeAreaView>
+  )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#F5F5F5',
   },
   header: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.md,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
   },
   title: {
-    ...typography.h1,
-    color: colors.primary,
-    marginBottom: spacing.xs,
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1A1A1A',
   },
-  subtitle: {
-    ...typography.bodySmall,
-    color: colors.textMuted,
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
   },
-});
+  emptyText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1A1A1A',
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: '#999999',
+    textAlign: 'center',
+  },
+})

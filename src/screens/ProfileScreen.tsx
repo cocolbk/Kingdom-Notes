@@ -1,227 +1,188 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react'
 import {
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
   View,
-} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {useTeachings} from '../context/TeachingContext';
-import {Button} from '../components/Button';
-import {getStorageKey} from '../storage/storage';
-import {colors} from '../theme/colors';
-import {radius, spacing} from '../theme/spacing';
-import {typography} from '../theme/typography';
+  StyleSheet,
+  SafeAreaView,
+  Text,
+  ScrollView,
+} from 'react-native'
+import { getTeachings } from '../utils/storage'
 
-export function ProfileScreen() {
-  const insets = useSafeAreaInsets();
-  const {teachings, favoriteTeachings, clearAllData} = useTeachings();
+export const ProfileScreen: React.FC = () => {
+  const [stats, setStats] = useState({
+    totalTeachings: 0,
+    totalFavorites: 0,
+    totalPastors: 0,
+  })
 
-  const handleClearData = () => {
-    Alert.alert(
-      'Clear All Data',
-      'This will permanently delete all teachings. This action cannot be undone.',
-      [
-        {text: 'Cancel', style: 'cancel'},
-        {
-          text: 'Clear Everything',
-          style: 'destructive',
-          onPress: async () => {
-            await clearAllData();
-            Alert.alert('Done', 'All journal data has been cleared.');
-          },
-        },
-      ],
-    );
-  };
+  useEffect(() => {
+    loadStats()
+  }, [])
 
-  const stats = [
-    {label: 'Total Teachings', value: teachings.length, icon: '📜'},
-    {label: 'Favorites', value: favoriteTeachings.length, icon: '★'},
-  ];
+  const loadStats = async () => {
+    try {
+      const teachings = await getTeachings()
+      const uniquePastors = new Set(teachings.map((t) => t.pastorName))
+      const favorites = teachings.filter((t) => t.isFavorite)
+
+      setStats({
+        totalTeachings: teachings.length,
+        totalFavorites: favorites.length,
+        totalPastors: uniquePastors.size,
+      })
+    } catch (error) {
+      console.error('Error loading stats:', error)
+    }
+  }
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={[
-        styles.scroll,
-        {paddingTop: insets.top + spacing.lg},
-      ]}
-      showsVerticalScrollIndicator={false}>
-      <View style={styles.profileHeader}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarIcon}>✝</Text>
-        </View>
-        <Text style={styles.appName}>Biblical Journal</Text>
-        <Text style={styles.tagline}>Capture • Preserve • Grow Through God's Word</Text>
-      </View>
-
-      <Text style={styles.sectionTitle}>Your Journal Stats</Text>
-      <View style={styles.statsGrid}>
-        {stats.map(stat => (
-          <View key={stat.label} style={styles.statCard}>
-            <Text style={styles.statIcon}>{stat.icon}</Text>
-            <Text style={styles.statValue}>{stat.value}</Text>
-            <Text style={styles.statLabel}>{stat.label}</Text>
+    <SafeAreaView style={styles.container}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <View style={styles.avatarContainer}>
+            <Text style={styles.avatar}>📖</Text>
           </View>
-        ))}
-      </View>
+          <Text style={styles.appName}>Kingdom Notes</Text>
+          <Text style={styles.subtitle}>Biblical Teaching Journal</Text>
+        </View>
 
-      <Text style={styles.sectionTitle}>About</Text>
-      <View style={styles.infoCard}>
-        <InfoRow label="App Name" value="Biblical Journal" />
-        <InfoRow label="Package" value="com.prince.biblicaljournal" />
-        <InfoRow label="Version" value="1.0.0" />
-        <InfoRow label="Storage" value="Offline (AsyncStorage)" />
-        <InfoRow label="Storage Key" value={getStorageKey()} />
-      </View>
+        <View style={styles.statsContainer}>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{stats.totalTeachings}</Text>
+            <Text style={styles.statLabel}>Total Teachings</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{stats.totalFavorites}</Text>
+            <Text style={styles.statLabel}>Favorite Teachings</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{stats.totalPastors}</Text>
+            <Text style={styles.statLabel}>Unique Pastors</Text>
+          </View>
+        </View>
 
-      <Text style={styles.sectionTitle}>Data Management</Text>
-      <View style={styles.infoCard}>
-        <Text style={styles.infoText}>
-          All your teachings are stored locally on this device. No account or
-          internet connection is required.
-        </Text>
-        <Button
-          title="Clear All Data"
-          variant="danger"
-          onPress={handleClearData}
-          style={styles.clearButton}
-        />
-      </View>
+        <View style={styles.infoSection}>
+          <Text style={styles.sectionTitle}>About Kingdom Notes</Text>
+          <Text style={styles.description}>
+            Kingdom Notes is a biblical teaching journal app designed to help you save, organize,
+            and revisit church teachings, sermon notes, prayers, and confessions.
+          </Text>
 
-      <Text style={styles.footer}>Biblical Journal © 2026</Text>
-    </ScrollView>
-  );
-}
+          <Text style={styles.sectionTitle}>Features</Text>
+          <View style={styles.featureList}>
+            <Text style={styles.feature}>✓ Add and organize teaching notes</Text>
+            <Text style={styles.feature}>✓ Search by title, pastor, scripture, or date</Text>
+            <Text style={styles.feature}>✓ Mark teachings as favorites</Text>
+            <Text style={styles.feature}>✓ Include prayer and confession notes</Text>
+            <Text style={styles.feature}>✓ Local storage - your data stays private</Text>
+          </View>
 
-function InfoRow({label, value}: {label: string; value: string}) {
-  return (
-    <View style={styles.infoRow}>
-      <Text style={styles.infoLabel}>{label}</Text>
-      <Text style={styles.infoValue}>{value}</Text>
-    </View>
-  );
+          <Text style={styles.sectionTitle}>Version</Text>
+          <Text style={styles.version}>1.0.0</Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#F5F5F5',
   },
-  scroll: {
-    padding: spacing.lg,
-    paddingBottom: spacing.xxxl,
-  },
-  profileHeader: {
+  header: {
     alignItems: 'center',
-    marginBottom: spacing.xxxl,
+    paddingVertical: 32,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
   },
-  avatar: {
+  avatarContainer: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
+    backgroundColor: '#E8F0FE',
     justifyContent: 'center',
-    marginBottom: spacing.lg,
-    borderWidth: 3,
-    borderColor: colors.accent,
+    alignItems: 'center',
+    marginBottom: 16,
   },
-  avatarIcon: {
-    fontSize: 36,
-    color: colors.accent,
+  avatar: {
+    fontSize: 40,
   },
   appName: {
-    ...typography.h1,
-    color: colors.primary,
-    marginBottom: spacing.xs,
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    marginBottom: 4,
   },
-  tagline: {
-    ...typography.bodySmall,
-    color: colors.textMuted,
-    textAlign: 'center',
+  subtitle: {
+    fontSize: 14,
+    color: '#999999',
   },
-  sectionTitle: {
-    ...typography.h3,
-    color: colors.primary,
-    marginBottom: spacing.md,
-  },
-  statsGrid: {
+  statsContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    marginBottom: spacing.xxl,
+    paddingHorizontal: 16,
+    paddingVertical: 24,
+    gap: 12,
   },
   statCard: {
-    width: '48%',
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    shadowColor: colors.shadow,
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 1,
-    shadowRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
     elevation: 2,
   },
-  statIcon: {
+  statNumber: {
     fontSize: 24,
-    marginBottom: spacing.sm,
-  },
-  statValue: {
-    ...typography.h1,
-    color: colors.primary,
-    fontSize: 28,
+    fontWeight: '700',
+    color: '#4A90E2',
+    marginBottom: 4,
   },
   statLabel: {
-    ...typography.caption,
+    fontSize: 12,
+    color: '#999999',
     textAlign: 'center',
-    marginTop: 2,
   },
-  infoCard: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
-    marginBottom: spacing.xxl,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
+  infoSection: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
   },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
-  },
-  infoLabel: {
-    ...typography.bodySmall,
-    color: colors.textMuted,
-    flex: 1,
-  },
-  infoValue: {
-    ...typography.bodySmall,
-    color: colors.text,
+  sectionTitle: {
+    fontSize: 16,
     fontWeight: '600',
-    flex: 1,
-    textAlign: 'right',
+    color: '#1A1A1A',
+    marginTop: 16,
+    marginBottom: 8,
   },
-  infoText: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
+  description: {
+    fontSize: 14,
+    color: '#666666',
     lineHeight: 22,
-    marginBottom: spacing.lg,
+    backgroundColor: '#FFFFFF',
+    padding: 12,
+    borderRadius: 8,
   },
-  clearButton: {
-    width: '100%',
+  featureList: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    padding: 12,
   },
-  footer: {
-    ...typography.caption,
-    textAlign: 'center',
-    color: colors.textMuted,
-    marginTop: spacing.lg,
+  feature: {
+    fontSize: 13,
+    color: '#666666',
+    paddingVertical: 6,
+    lineHeight: 20,
   },
-});
+  version: {
+    fontSize: 14,
+    color: '#666666',
+    backgroundColor: '#FFFFFF',
+    padding: 12,
+    borderRadius: 8,
+  },
+})

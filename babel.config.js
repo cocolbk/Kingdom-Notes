@@ -1,3 +1,7 @@
 module.exports = {
-  presets: ['module:@react-native/babel-preset'],
-};
+  presets: [
+    ['@babel/preset-react', { runtime: 'automatic' }],
+    '@babel/preset-typescript',
+    ['@react-native/babel-preset', { useTransformReactJSXExperimental: true }],
+  ],
+}

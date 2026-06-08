@@ -1,57 +1,69 @@
-import React from 'react';
+import React from 'react'
 import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TextInputProps,
   View,
-} from 'react-native';
-import {colors} from '../theme/colors';
-import {borderRadius, spacing} from '../theme/spacing';
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  Text,
+} from 'react-native'
 
-interface SearchBarProps extends TextInputProps {
-  value: string;
-  onChangeText: (text: string) => void;
+interface SearchBarProps {
+  value: string
+  onChangeText: (text: string) => void
+  onClear?: () => void
 }
 
-export function SearchBar({value, onChangeText, ...props}: SearchBarProps) {
+export const SearchBar: React.FC<SearchBarProps> = ({
+  value,
+  onChangeText,
+  onClear,
+}) => {
   return (
     <View style={styles.container}>
-      <Text style={styles.icon}>🔍</Text>
       <TextInput
         style={styles.input}
+        placeholder="Search teachings..."
+        placeholderTextColor="#CCCCCC"
         value={value}
         onChangeText={onChangeText}
-        placeholder="Search teachings..."
-        placeholderTextColor={colors.textMuted}
-        autoCapitalize="none"
-        autoCorrect={false}
-        clearButtonMode="while-editing"
-        {...props}
       />
+      {value && (
+        <TouchableOpacity
+          style={styles.clearButton}
+          onPress={onClear}
+        >
+          <Text style={styles.clearText}>✕</Text>
+        </TouchableOpacity>
+      )}
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingHorizontal: spacing.md,
-    minHeight: 48,
-  },
-  icon: {
-    fontSize: 16,
-    marginRight: spacing.sm,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
   },
   input: {
     flex: 1,
-    fontSize: 16,
-    color: colors.text,
-    paddingVertical: spacing.sm,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    fontSize: 14,
+    color: '#1A1A1A',
   },
-});
+  clearButton: {
+    marginLeft: 8,
+    padding: 6,
+  },
+  clearText: {
+    fontSize: 18,
+    color: '#999999',
+  },
+})

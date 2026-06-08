@@ -5,7 +5,6 @@ import {
   SafeAreaView,
 } from 'react-native'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { v4 as uuidv4 } from 'uuid'
 import { TeachingForm } from '../components/TeachingForm'
 import { saveTeaching } from '../utils/storage'
 import { Teaching } from '../types/teaching'
@@ -17,34 +16,29 @@ type RootStackParamList = {
   ViewTeaching: { teaching: Teaching }
 }
 
-type Props = NativeStackScreenProps<RootStackParamList, 'AddTeaching'>
+type Props = NativeStackScreenProps<RootStackParamList, 'EditTeaching'>
 
-export const AddTeachingScreen: React.FC<Props> = ({ navigation }) => {
+export const EditTeachingScreen: React.FC<Props> = ({ route, navigation }) => {
+  const { teaching } = route.params
+
   const handleSave = async (data: Partial<Teaching>) => {
     try {
-      const newTeaching: Teaching = {
-        id: uuidv4(),
-        title: data.title || '',
-        pastorName: data.pastorName || '',
-        date: data.date || new Date().toISOString().split('T')[0],
-        scriptureReference: data.scriptureReference || '',
-        mainTeachingNotes: data.mainTeachingNotes || '',
-        prayer: data.prayer || '',
-        confession: data.confession || '',
-        isFavorite: false,
-        createdAt: Date.now(),
+      const updatedTeaching: Teaching = {
+        ...teaching,
+        ...data,
       }
 
-      await saveTeaching(newTeaching)
+      await saveTeaching(updatedTeaching)
       navigation.goBack()
     } catch (error) {
-      console.error('Error saving teaching:', error)
+      console.error('Error updating teaching:', error)
     }
   }
 
   return (
     <SafeAreaView style={styles.container}>
       <TeachingForm
+        initialTeaching={teaching}
         onSave={handleSave}
         onCancel={() => navigation.goBack()}
       />

@@ -1,133 +1,166 @@
-import React from 'react';
+import React from 'react'
 import {
-  StyleSheet,
+  View,
   Text,
   TouchableOpacity,
-  View,
-} from 'react-native';
-import {Teaching} from '../types/teaching';
-import {formatShortDate} from '../utils/date';
-import {colors} from '../theme/colors';
-import {radius, spacing} from '../theme/spacing';
-import {typography} from '../theme/typography';
+  StyleSheet,
+  Alert,
+} from 'react-native'
+import { Teaching } from '../types/teaching'
 
 interface TeachingCardProps {
-  teaching: Teaching;
-  onPress: () => void;
-  onToggleFavorite?: () => void;
-  onLongPress?: () => void;
+  teaching: Teaching
+  onPress: () => void
+  onEdit: () => void
+  onDelete: () => void
+  onToggleFavorite: () => void
 }
 
-export function TeachingCard({
+export const TeachingCard: React.FC<TeachingCardProps> = ({
   teaching,
   onPress,
+  onEdit,
+  onDelete,
   onToggleFavorite,
-  onLongPress,
-}: TeachingCardProps) {
+}) => {
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    })
+  }
+
+  const handleDelete = () => {
+    Alert.alert('Delete Teaching', 'Are you sure you want to delete this teaching?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: onDelete,
+      },
+    ])
+  }
+
   return (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={onPress}
-      onLongPress={onLongPress}
-      delayLongPress={400}
-      activeOpacity={0.85}>
+    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.header}>
-        <View style={styles.headerText}>
+        <View style={styles.titleContainer}>
           <Text style={styles.title} numberOfLines={2}>
-            {teaching.title || 'Untitled Teaching'}
+            {teaching.title}
           </Text>
-          {teaching.pastorName ? (
-            <Text style={styles.pastor} numberOfLines={1}>
-              {teaching.pastorName}
-            </Text>
-          ) : null}
         </View>
-        {onToggleFavorite ? (
-          <TouchableOpacity
-            onPress={onToggleFavorite}
-            hitSlop={12}
-            style={styles.favoriteButton}>
-            <Text style={styles.favoriteIcon}>
-              {teaching.isFavorite ? '★' : '☆'}
-            </Text>
-          </TouchableOpacity>
-        ) : null}
+        <TouchableOpacity onPress={onToggleFavorite} style={styles.favoriteBtn}>
+          <Text style={styles.favoriteStar}>{teaching.isFavorite ? '★' : '☆'}</Text>
+        </TouchableOpacity>
       </View>
 
-      <View style={styles.meta}>
-        <Text style={styles.date}>{formatShortDate(teaching.date)}</Text>
-        {teaching.scriptureReference ? (
-          <Text style={styles.scripture} numberOfLines={1}>
-            📖 {teaching.scriptureReference}
-          </Text>
-        ) : null}
-      </View>
+      <Text style={styles.pastor}>{teaching.pastorName}</Text>
 
-      {teaching.mainTeachingNotes ? (
-        <Text style={styles.preview} numberOfLines={2}>
-          {teaching.mainTeachingNotes}
+      <View style={styles.metaContainer}>
+        <Text style={styles.meta}>{formatDate(teaching.date)}</Text>
+        <Text style={styles.meta}>•</Text>
+        <Text style={styles.meta} numberOfLines={1}>
+          {teaching.scriptureReference}
         </Text>
-      ) : null}
+      </View>
+
+      <Text style={styles.notes} numberOfLines={3}>
+        {teaching.mainTeachingNotes}
+      </Text>
+
+      <View style={styles.footer}>
+        <TouchableOpacity style={styles.editBtn} onPress={onEdit}>
+          <Text style={styles.buttonText}>Edit</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.deleteBtn} onPress={handleDelete}>
+          <Text style={styles.buttonText}>Delete</Text>
+        </TouchableOpacity>
+      </View>
     </TouchableOpacity>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
-    marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    shadowColor: colors.shadow,
-    shadowOffset: {width: 0, height: 3},
-    shadowOpacity: 1,
-    shadowRadius: 10,
-    elevation: 4,
+  container: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    marginHorizontal: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
     justifyContent: 'space-between',
-    marginBottom: spacing.sm,
+    alignItems: 'flex-start',
+    marginBottom: 8,
   },
-  headerText: {
+  titleContainer: {
     flex: 1,
-    marginRight: spacing.sm,
+    marginRight: 8,
   },
   title: {
-    ...typography.h3,
-    color: colors.primary,
-    marginBottom: 2,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1A1A1A',
+  },
+  favoriteBtn: {
+    padding: 4,
+  },
+  favoriteStar: {
+    fontSize: 24,
+    color: '#FFB800',
   },
   pastor: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
+    fontSize: 14,
+    color: '#666666',
+    marginBottom: 8,
+    fontWeight: '500',
   },
-  favoriteButton: {
-    padding: spacing.xs,
-  },
-  favoriteIcon: {
-    fontSize: 24,
-    color: colors.favorite,
+  metaContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 4,
   },
   meta: {
-    marginBottom: spacing.sm,
+    fontSize: 12,
+    color: '#999999',
   },
-  date: {
-    ...typography.caption,
-    color: colors.textMuted,
-    marginBottom: 2,
-  },
-  scripture: {
-    ...typography.bodySmall,
-    color: colors.primaryLight,
-    fontStyle: 'italic',
-  },
-  preview: {
-    ...typography.bodySmall,
-    color: colors.textSecondary,
+  notes: {
+    fontSize: 13,
+    color: '#444444',
     lineHeight: 20,
+    marginBottom: 12,
   },
-});
+  footer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  editBtn: {
+    flex: 1,
+    backgroundColor: '#4A90E2',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  deleteBtn: {
+    flex: 1,
+    backgroundColor: '#E74C3C',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+})

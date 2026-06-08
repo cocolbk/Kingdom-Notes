@@ -1,108 +1,146 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react'
 import {
-  Alert,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
   View,
-} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {useTeachings} from '../context/TeachingContext';
-import {TeachingList} from '../components/TeachingList';
-import {RootStackParamList} from '../navigation/types';
-import {colors} from '../theme/colors';
-import {spacing} from '../theme/spacing';
-import {typography} from '../theme/typography';
+  StyleSheet,
+  TouchableOpacity,
+  Text,
+  SafeAreaView,
+} from 'react-native'
+import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { TeachingList } from '../components/TeachingList'
+import { Teaching } from '../types/teaching'
+import { getTeachings, deleteTeaching, toggleFavorite, saveTeaching } from '../utils/storage'
+import { SAMPLE_TEACHINGS } from '../utils/sampleData'
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+type RootStackParamList = {
+  Home: undefined
+  AddTeaching: undefined
+  EditTeaching: { teaching: Teaching }
+  ViewTeaching: { teaching: Teaching }
+}
 
-export function HomeScreen() {
-  const navigation = useNavigation<NavigationProp>();
-  const insets = useSafeAreaInsets();
-  const {teachings, toggleFavorite, deleteTeaching} = useTeachings();
+type Props = NativeStackScreenProps<RootStackParamList, 'Home'>
 
-  const handleDelete = (id: string) => {
-    Alert.alert(
-      'Delete Teaching',
-      'Are you sure you want to permanently delete this teaching?',
-      [
-        {text: 'Cancel', style: 'cancel'},
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => deleteTeaching(id),
-        },
-      ],
-    );
-  };
+export const HomeScreen: React.FC<Props> = ({ navigation }) => {
+  const [teachings, setTeachings] = useState<Teaching[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    loadTeachings()
+  }, [])
+
+  const loadTeachings = async () => {
+    try {
+      let data = await getTeachings()
+      if (data.length === 0) {
+        // Add sample data on first load
+        for (const teaching of SAMPLE_TEACHINGS) {
+          await saveTeaching(teaching)
+        }
+        data = SAMPLE_TEACHINGS
+      }
+      setTeachings(data.sort((a, b) => b.createdAt - a.createdAt))
+    } catch (error) {
+      console.error('Error loading teachings:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDeleteTeaching = async (id: string) => {
+    try {
+      await deleteTeaching(id)
+      await loadTeachings()
+    } catch (error) {
+      console.error('Error deleting teaching:', error)
+    }
+  }
+
+  const handleToggleFavorite = async (id: string) => {
+    try {
+      await toggleFavorite(id)
+      await loadTeachings()
+    } catch (error) {
+      console.error('Error toggling favorite:', error)
+    }
+  }
+
+  const useFocusEffect = () => {
+    React.useEffect(() => {
+      const unsubscribe = navigation.addListener('focus', () => {
+        loadTeachings()
+      })
+      return unsubscribe
+    }, [navigation])
+  }
+
+  useFocusEffect()
 
   return (
-    <View style={[styles.container, {paddingTop: insets.top}]}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Biblical Journal</Text>
-        <Text style={styles.subtitle}>
-          {teachings.length} teaching{teachings.length !== 1 ? 's' : ''} saved
-        </Text>
+        <Text style={styles.title}>Kingdom Notes</Text>
       </View>
 
       <TeachingList
         teachings={teachings}
-        onPress={teaching =>
-          navigation.navigate('AddTeaching', {teachingId: teaching.id})
+        onSelectTeaching={(teaching) =>
+          navigation.navigate('ViewTeaching', { teaching })
         }
-        onToggleFavorite={toggleFavorite}
-        onDelete={handleDelete}
+        onEditTeaching={(teaching) =>
+          navigation.navigate('EditTeaching', { teaching })
+        }
+        onDeleteTeaching={handleDeleteTeaching}
+        onToggleFavorite={handleToggleFavorite}
       />
 
       <TouchableOpacity
-        style={[styles.fab, {bottom: insets.bottom + 16}]}
+        style={styles.fab}
         onPress={() => navigation.navigate('AddTeaching')}
-        activeOpacity={0.9}>
+        activeOpacity={0.8}
+      >
         <Text style={styles.fabIcon}>+</Text>
       </TouchableOpacity>
-    </View>
-  );
+    </SafeAreaView>
+  )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#F5F5F5',
   },
   header: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.md,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
   },
   title: {
-    ...typography.h1,
-    color: colors.primary,
-    marginBottom: spacing.xs,
-  },
-  subtitle: {
-    ...typography.bodySmall,
-    color: colors.textMuted,
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1A1A1A',
   },
   fab: {
     position: 'absolute',
-    right: spacing.xl,
-    width: 58,
-    height: 58,
-    borderRadius: 29,
-    backgroundColor: colors.accent,
-    alignItems: 'center',
+    bottom: 80,
+    right: 16,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#4A90E2',
     justifyContent: 'center',
-    shadowColor: colors.shadow,
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 1,
-    shadowRadius: 10,
-    elevation: 6,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
   fabIcon: {
-    fontSize: 30,
-    color: colors.primaryDark,
-    fontWeight: '300',
-    marginTop: -2,
+    fontSize: 28,
+    color: '#FFFFFF',
+    fontWeight: '600',
   },
-});
+})
