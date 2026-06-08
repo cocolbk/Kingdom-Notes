@@ -1,3 +1,5 @@
+import {Teaching} from '../types/teaching';
+
 export function formatDisplayDate(isoDate: string): string {
   if (!isoDate) {
     return '';
@@ -34,14 +36,12 @@ export function todayISO(): string {
   return now.toISOString().split('T')[0];
 }
 
-export function sortByDateDesc<T extends {date: string; updatedAt: string}>(
-  items: T[],
-): T[] {
+export function sortByDateDesc(items: Teaching[]): Teaching[] {
   return [...items].sort((a, b) => {
     const dateCompare = new Date(b.date).getTime() - new Date(a.date).getTime();
     if (dateCompare !== 0) {
       return dateCompare;
     }
-    return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+    return b.createdAt - a.createdAt;
   });
 }

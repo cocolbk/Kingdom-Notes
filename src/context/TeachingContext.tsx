@@ -6,22 +6,15 @@ import React, {
   useMemo,
   useState,
 } from 'react';
+import {SAMPLE_TEACHINGS} from '../data/sampleTeachings';
 import {clearAllTeachings, loadTeachings, saveTeachings} from '../storage/storage';
-import {
-  ConfessionEntry,
-  PrayerEntry,
-  Teaching,
-  TeachingInput,
-} from '../types/teaching';
+import {Teaching, TeachingInput} from '../types/teaching';
 import {sortByDateDesc} from '../utils/date';
 import {generateId} from '../utils/search';
 
 interface TeachingContextValue {
   teachings: Teaching[];
-  recentTeachings: Teaching[];
   favoriteTeachings: Teaching[];
-  prayerEntries: PrayerEntry[];
-  confessionEntries: ConfessionEntry[];
   isLoading: boolean;
   addTeaching: (input: TeachingInput) => Promise<Teaching>;
   updateTeaching: (id: string, input: TeachingInput) => Promise<void>;
@@ -46,7 +39,11 @@ export function TeachingProvider({children}: {children: React.ReactNode}) {
 
   const refresh = useCallback(async () => {
     setIsLoading(true);
-    const loaded = await loadTeachings();
+    let loaded = await loadTeachings();
+    if (loaded.length === 0) {
+      loaded = SAMPLE_TEACHINGS;
+      await saveTeachings(loaded);
+    }
     setTeachings(sortByDateDesc(loaded));
     setIsLoading(false);
   }, []);
@@ -57,20 +54,17 @@ export function TeachingProvider({children}: {children: React.ReactNode}) {
 
   const addTeaching = useCallback(
     async (input: TeachingInput): Promise<Teaching> => {
-      const now = new Date().toISOString();
       const teaching: Teaching = {
         id: generateId(),
         title: input.title.trim(),
         pastorName: input.pastorName.trim(),
         date: input.date,
-        scriptureReferences: input.scriptureReferences.trim(),
-        mainNotes: input.mainNotes.trim(),
+        scriptureReference: input.scriptureReference.trim(),
+        mainTeachingNotes: input.mainTeachingNotes.trim(),
         prayer: input.prayer.trim(),
         confession: input.confession.trim(),
-        declaration: input.declaration.trim(),
         isFavorite: input.isFavorite ?? false,
-        createdAt: now,
-        updatedAt: now,
+        createdAt: Date.now(),
       };
       await persist([teaching, ...teachings]);
       return teaching;
@@ -89,13 +83,11 @@ export function TeachingProvider({children}: {children: React.ReactNode}) {
           title: input.title.trim(),
           pastorName: input.pastorName.trim(),
           date: input.date,
-          scriptureReferences: input.scriptureReferences.trim(),
-          mainNotes: input.mainNotes.trim(),
+          scriptureReference: input.scriptureReference.trim(),
+          mainTeachingNotes: input.mainTeachingNotes.trim(),
           prayer: input.prayer.trim(),
           confession: input.confession.trim(),
-          declaration: input.declaration.trim(),
           isFavorite: input.isFavorite ?? item.isFavorite,
-          updatedAt: new Date().toISOString(),
         };
       });
       await persist(next);
@@ -113,9 +105,7 @@ export function TeachingProvider({children}: {children: React.ReactNode}) {
   const toggleFavorite = useCallback(
     async (id: string) => {
       const next = teachings.map(item =>
-        item.id === id
-          ? {...item, isFavorite: !item.isFavorite, updatedAt: new Date().toISOString()}
-          : item,
+        item.id === id ? {...item, isFavorite: !item.isFavorite} : item,
       );
       await persist(next);
     },
@@ -132,56 +122,15 @@ export function TeachingProvider({children}: {children: React.ReactNode}) {
     setTeachings([]);
   }, []);
 
-  const recentTeachings = useMemo(
-    () => teachings.slice(0, 5),
-    [teachings],
-  );
-
   const favoriteTeachings = useMemo(
     () => teachings.filter(item => item.isFavorite),
-    [teachings],
-  );
-
-  const prayerEntries = useMemo(
-    (): PrayerEntry[] =>
-      teachings
-        .filter(item => item.prayer.trim().length > 0)
-        .map(item => ({
-          teachingId: item.id,
-          teachingTitle: item.title,
-          pastorName: item.pastorName,
-          date: item.date,
-          prayer: item.prayer,
-        })),
-    [teachings],
-  );
-
-  const confessionEntries = useMemo(
-    (): ConfessionEntry[] =>
-      teachings
-        .filter(
-          item =>
-            item.confession.trim().length > 0 ||
-            item.declaration.trim().length > 0,
-        )
-        .map(item => ({
-          teachingId: item.id,
-          teachingTitle: item.title,
-          pastorName: item.pastorName,
-          date: item.date,
-          confession: item.confession,
-          declaration: item.declaration,
-        })),
     [teachings],
   );
 
   const value = useMemo(
     (): TeachingContextValue => ({
       teachings,
-      recentTeachings,
       favoriteTeachings,
-      prayerEntries,
-      confessionEntries,
       isLoading,
       addTeaching,
       updateTeaching,
@@ -193,10 +142,7 @@ export function TeachingProvider({children}: {children: React.ReactNode}) {
     }),
     [
       teachings,
-      recentTeachings,
       favoriteTeachings,
-      prayerEntries,
-      confessionEntries,
       isLoading,
       addTeaching,
       updateTeaching,

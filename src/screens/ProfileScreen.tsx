@@ -14,22 +14,14 @@ import {colors} from '../theme/colors';
 import {radius, spacing} from '../theme/spacing';
 import {typography} from '../theme/typography';
 
-const TAGLINE = "Capture • Preserve • Grow Through God's Word";
-
 export function ProfileScreen() {
   const insets = useSafeAreaInsets();
-  const {
-    teachings,
-    favoriteTeachings,
-    prayerEntries,
-    confessionEntries,
-    clearAllData,
-  } = useTeachings();
+  const {teachings, favoriteTeachings, clearAllData} = useTeachings();
 
   const handleClearData = () => {
     Alert.alert(
       'Clear All Data',
-      'This will permanently delete all teachings, prayers, and confessions. This action cannot be undone.',
+      'This will permanently delete all teachings. This action cannot be undone.',
       [
         {text: 'Cancel', style: 'cancel'},
         {
@@ -47,8 +39,6 @@ export function ProfileScreen() {
   const stats = [
     {label: 'Total Teachings', value: teachings.length, icon: '📜'},
     {label: 'Favorites', value: favoriteTeachings.length, icon: '★'},
-    {label: 'Prayers', value: prayerEntries.length, icon: '🙏'},
-    {label: 'Confessions', value: confessionEntries.length, icon: '📖'},
   ];
 
   return (
@@ -63,8 +53,8 @@ export function ProfileScreen() {
         <View style={styles.avatar}>
           <Text style={styles.avatarIcon}>✝</Text>
         </View>
-        <Text style={styles.appName}>Kingdom Notes</Text>
-        <Text style={styles.tagline}>{TAGLINE}</Text>
+        <Text style={styles.appName}>Biblical Journal</Text>
+        <Text style={styles.tagline}>Capture • Preserve • Grow Through God's Word</Text>
       </View>
 
       <Text style={styles.sectionTitle}>Your Journal Stats</Text>
@@ -80,8 +70,8 @@ export function ProfileScreen() {
 
       <Text style={styles.sectionTitle}>About</Text>
       <View style={styles.infoCard}>
-        <InfoRow label="App Name" value="Kingdom Notes" />
-        <InfoRow label="Package" value="com.kingdomnotes.app" />
+        <InfoRow label="App Name" value="Biblical Journal" />
+        <InfoRow label="Package" value="com.prince.biblicaljournal" />
         <InfoRow label="Version" value="1.0.0" />
         <InfoRow label="Storage" value="Offline (AsyncStorage)" />
         <InfoRow label="Storage Key" value={getStorageKey()} />
@@ -91,8 +81,7 @@ export function ProfileScreen() {
       <View style={styles.infoCard}>
         <Text style={styles.infoText}>
           All your teachings are stored locally on this device. No account or
-          internet connection is required. Your spiritual journal stays private
-          and accessible anytime.
+          internet connection is required.
         </Text>
         <Button
           title="Clear All Data"
@@ -102,9 +91,7 @@ export function ProfileScreen() {
         />
       </View>
 
-      <Text style={styles.footer}>
-        Built with love for God's Word · Kingdom Notes © 2026
-      </Text>
+      <Text style={styles.footer}>Biblical Journal © 2026</Text>
     </ScrollView>
   );
 }
@@ -175,6 +162,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: colors.borderLight,
+    shadowColor: colors.shadow,
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 1,
+    shadowRadius: 8,
+    elevation: 2,
   },
   statIcon: {
     fontSize: 24,

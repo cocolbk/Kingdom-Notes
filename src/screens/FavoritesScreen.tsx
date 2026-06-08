@@ -1,16 +1,10 @@
 import React from 'react';
-import {
-  FlatList,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import {Alert, StyleSheet, Text, View} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTeachings} from '../context/TeachingContext';
-import {TeachingCard} from '../components/TeachingCard';
-import {EmptyState} from '../components/EmptyState';
+import {TeachingList} from '../components/TeachingList';
 import {RootStackParamList} from '../navigation/types';
 import {colors} from '../theme/colors';
 import {spacing} from '../theme/spacing';
@@ -21,7 +15,22 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 export function FavoritesScreen() {
   const navigation = useNavigation<NavigationProp>();
   const insets = useSafeAreaInsets();
-  const {favoriteTeachings, toggleFavorite} = useTeachings();
+  const {favoriteTeachings, toggleFavorite, deleteTeaching} = useTeachings();
+
+  const handleDelete = (id: string) => {
+    Alert.alert(
+      'Delete Teaching',
+      'Are you sure you want to permanently delete this teaching?',
+      [
+        {text: 'Cancel', style: 'cancel'},
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => deleteTeaching(id),
+        },
+      ],
+    );
+  };
 
   return (
     <View style={[styles.container, {paddingTop: insets.top}]}>
@@ -33,27 +42,16 @@ export function FavoritesScreen() {
         </Text>
       </View>
 
-      <FlatList
-        data={favoriteTeachings}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.list}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <EmptyState
-            icon="★"
-            title="No favorites yet"
-            message="Star teachings you want to revisit quickly. Tap the star on any teaching card."
-          />
+      <TeachingList
+        teachings={favoriteTeachings}
+        onPress={teaching =>
+          navigation.navigate('AddTeaching', {teachingId: teaching.id})
         }
-        renderItem={({item}) => (
-          <TeachingCard
-            teaching={item}
-            onPress={() =>
-              navigation.navigate('TeachingDetails', {teachingId: item.id})
-            }
-            onToggleFavorite={() => toggleFavorite(item.id)}
-          />
-        )}
+        onToggleFavorite={toggleFavorite}
+        onDelete={handleDelete}
+        emptyTitle="No favorites yet"
+        emptyMessage="Tap the star on any teaching card to save it here."
+        contentPaddingBottom={32}
       />
     </View>
   );
@@ -76,10 +74,5 @@ const styles = StyleSheet.create({
   subtitle: {
     ...typography.bodySmall,
     color: colors.textMuted,
-  },
-  list: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xxxl,
-    flexGrow: 1,
   },
 });

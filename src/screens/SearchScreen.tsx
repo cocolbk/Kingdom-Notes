@@ -1,17 +1,11 @@
 import React, {useMemo, useState} from 'react';
-import {
-  FlatList,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import {Alert, StyleSheet, Text, View} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTeachings} from '../context/TeachingContext';
 import {SearchInput} from '../components/SearchInput';
-import {TeachingCard} from '../components/TeachingCard';
-import {EmptyState} from '../components/EmptyState';
+import {TeachingList} from '../components/TeachingList';
 import {RootStackParamList} from '../navigation/types';
 import {searchTeachings} from '../utils/search';
 import {colors} from '../theme/colors';
@@ -23,7 +17,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 export function SearchScreen() {
   const navigation = useNavigation<NavigationProp>();
   const insets = useSafeAreaInsets();
-  const {teachings, toggleFavorite} = useTeachings();
+  const {teachings, toggleFavorite, deleteTeaching} = useTeachings();
   const [query, setQuery] = useState('');
 
   const results = useMemo(
@@ -31,46 +25,45 @@ export function SearchScreen() {
     [teachings, query],
   );
 
+  const handleDelete = (id: string) => {
+    Alert.alert(
+      'Delete Teaching',
+      'Are you sure you want to permanently delete this teaching?',
+      [
+        {text: 'Cancel', style: 'cancel'},
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => deleteTeaching(id),
+        },
+      ],
+    );
+  };
+
   return (
     <View style={[styles.container, {paddingTop: insets.top}]}>
       <View style={styles.header}>
         <Text style={styles.title}>Search</Text>
         <Text style={styles.subtitle}>
-          Find teachings by title, pastor, scripture, or notes
+          Filter by title, pastor, scripture, or date
         </Text>
-        <SearchInput
-          value={query}
-          onChangeText={setQuery}
-          autoFocus={false}
-        />
+        <SearchInput value={query} onChangeText={setQuery} />
       </View>
 
-      <FlatList
-        data={results}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.list}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <EmptyState
-            icon={query.trim() ? '🔍' : '📚'}
-            title={query.trim() ? 'No results found' : 'Search your teachings'}
-            message={
-              query.trim()
-                ? 'Try different keywords or check your spelling.'
-                : 'Enter a keyword to search across all your sermon notes.'
-            }
-          />
+      <TeachingList
+        teachings={results}
+        onPress={teaching =>
+          navigation.navigate('AddTeaching', {teachingId: teaching.id})
         }
-        renderItem={({item}) => (
-          <TeachingCard
-            teaching={item}
-            onPress={() =>
-              navigation.navigate('TeachingDetails', {teachingId: item.id})
-            }
-            onToggleFavorite={() => toggleFavorite(item.id)}
-          />
-        )}
+        onToggleFavorite={toggleFavorite}
+        onDelete={handleDelete}
+        emptyTitle={query.trim() ? 'No results found' : 'Search your teachings'}
+        emptyMessage={
+          query.trim()
+            ? 'Try different keywords or check your spelling.'
+            : 'Enter a keyword to find sermon notes quickly.'
+        }
+        contentPaddingBottom={32}
       />
     </View>
   );
@@ -94,10 +87,5 @@ const styles = StyleSheet.create({
     ...typography.bodySmall,
     color: colors.textMuted,
     marginBottom: spacing.lg,
-  },
-  list: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xxxl,
-    flexGrow: 1,
   },
 });

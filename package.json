@@ -1,20 +1,15 @@
 {
-  "name": "kingdom-notes",
+  "name": "biblical-journal",
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "vite",
     "build:web": "vite build",
-    "preview": "vite preview",
     "start": "react-native start",
-    "android": "react-native run-android",
-    "ios": "react-native run-ios",
     "lint": "eslint .",
     "test": "jest",
     "generate:assets": "node scripts/generate-assets.js",
-    "build:android:rn": "cd android-rn && gradlew.bat assembleRelease",
-    "build:android:rn:bundle": "cd android-rn && gradlew.bat bundleRelease",
-    "cap:sync": "npm run build:web && npx cap sync",
+    "cap:sync": "npm run build:web && npx cap sync android",
+    "cap:run:android": "npm run cap:sync && npx cap run android",
     "cap:open:android": "npx cap open android",
     "build:android": "npm run cap:sync && cd android-cap && gradlew.bat assembleRelease",
     "build:android:debug": "npm run cap:sync && cd android-cap && gradlew.bat assembleDebug"

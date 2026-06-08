@@ -13,7 +13,7 @@ export function LoadingScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.cross}>✝</Text>
-      <Text style={styles.title}>Kingdom Notes</Text>
+      <Text style={styles.title}>Biblical Journal</Text>
       <ActivityIndicator
         size="large"
         color={colors.accent}

@@ -1,38 +1,16 @@
-export interface Teaching {
+export type Teaching = {
   id: string;
   title: string;
   pastorName: string;
   date: string;
-  scriptureReferences: string;
-  mainNotes: string;
+  scriptureReference: string;
+  mainTeachingNotes: string;
   prayer: string;
   confession: string;
-  declaration: string;
   isFavorite: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export type TeachingInput = Omit<
-  Teaching,
-  'id' | 'isFavorite' | 'createdAt' | 'updatedAt'
-> & {
-  isFavorite?: boolean;
+  createdAt: number;
 };
 
-export interface PrayerEntry {
-  teachingId: string;
-  teachingTitle: string;
-  pastorName: string;
-  date: string;
-  prayer: string;
-}
-
-export interface ConfessionEntry {
-  teachingId: string;
-  teachingTitle: string;
-  pastorName: string;
-  date: string;
-  confession: string;
-  declaration: string;
-}
+export type TeachingInput = Omit<Teaching, 'id' | 'isFavorite' | 'createdAt'> & {
+  isFavorite?: boolean;
+};

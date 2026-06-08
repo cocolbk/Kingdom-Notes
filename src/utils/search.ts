@@ -3,12 +3,8 @@ import {Teaching} from '../types/teaching';
 const SEARCH_FIELDS: (keyof Teaching)[] = [
   'title',
   'pastorName',
+  'scriptureReference',
   'date',
-  'scriptureReferences',
-  'mainNotes',
-  'prayer',
-  'confession',
-  'declaration',
 ];
 
 export function searchTeachings(

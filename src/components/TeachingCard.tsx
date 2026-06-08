@@ -15,19 +15,21 @@ interface TeachingCardProps {
   teaching: Teaching;
   onPress: () => void;
   onToggleFavorite?: () => void;
-  compact?: boolean;
+  onLongPress?: () => void;
 }
 
 export function TeachingCard({
   teaching,
   onPress,
   onToggleFavorite,
-  compact,
+  onLongPress,
 }: TeachingCardProps) {
   return (
     <TouchableOpacity
-      style={[styles.card, compact && styles.compact]}
+      style={styles.card}
       onPress={onPress}
+      onLongPress={onLongPress}
+      delayLongPress={400}
       activeOpacity={0.85}>
       <View style={styles.header}>
         <View style={styles.headerText}>
@@ -49,43 +51,23 @@ export function TeachingCard({
               {teaching.isFavorite ? '★' : '☆'}
             </Text>
           </TouchableOpacity>
-        ) : teaching.isFavorite ? (
-          <Text style={styles.favoriteIcon}>★</Text>
         ) : null}
       </View>
 
       <View style={styles.meta}>
         <Text style={styles.date}>{formatShortDate(teaching.date)}</Text>
-        {teaching.scriptureReferences ? (
+        {teaching.scriptureReference ? (
           <Text style={styles.scripture} numberOfLines={1}>
-            📖 {teaching.scriptureReferences}
+            📖 {teaching.scriptureReference}
           </Text>
         ) : null}
       </View>
 
-      {!compact && teaching.mainNotes ? (
+      {teaching.mainTeachingNotes ? (
         <Text style={styles.preview} numberOfLines={2}>
-          {teaching.mainNotes}
+          {teaching.mainTeachingNotes}
         </Text>
       ) : null}
-
-      <View style={styles.tags}>
-        {teaching.prayer.trim() ? (
-          <View style={[styles.tag, styles.prayerTag]}>
-            <Text style={styles.tagText}>Prayer</Text>
-          </View>
-        ) : null}
-        {teaching.confession.trim() ? (
-          <View style={[styles.tag, styles.confessionTag]}>
-            <Text style={styles.tagText}>Confession</Text>
-          </View>
-        ) : null}
-        {teaching.declaration.trim() ? (
-          <View style={[styles.tag, styles.declarationTag]}>
-            <Text style={styles.tagText}>Declaration</Text>
-          </View>
-        ) : null}
-      </View>
     </TouchableOpacity>
   );
 }
@@ -99,13 +81,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderLight,
     shadowColor: colors.shadow,
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: {width: 0, height: 3},
     shadowOpacity: 1,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  compact: {
-    padding: spacing.md,
+    shadowRadius: 10,
+    elevation: 4,
   },
   header: {
     flexDirection: 'row',
@@ -130,7 +109,7 @@ const styles = StyleSheet.create({
     padding: spacing.xs,
   },
   favoriteIcon: {
-    fontSize: 22,
+    fontSize: 24,
     color: colors.favorite,
   },
   meta: {
@@ -149,30 +128,6 @@ const styles = StyleSheet.create({
   preview: {
     ...typography.bodySmall,
     color: colors.textSecondary,
-    marginBottom: spacing.sm,
-  },
-  tags: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.xs,
-  },
-  tag: {
-    borderRadius: radius.full,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-  },
-  prayerTag: {
-    backgroundColor: colors.successBg,
-  },
-  confessionTag: {
-    backgroundColor: '#F5F0E6',
-  },
-  declarationTag: {
-    backgroundColor: '#EEF2F7',
-  },
-  tagText: {
-    ...typography.caption,
-    fontSize: 11,
-    color: colors.textSecondary,
+    lineHeight: 20,
   },
 });

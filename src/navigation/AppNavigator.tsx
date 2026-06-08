@@ -10,9 +10,6 @@ import {SearchScreen} from '../screens/SearchScreen';
 import {FavoritesScreen} from '../screens/FavoritesScreen';
 import {ProfileScreen} from '../screens/ProfileScreen';
 import {AddTeachingScreen} from '../screens/AddTeachingScreen';
-import {TeachingDetailsScreen} from '../screens/TeachingDetailsScreen';
-import {PrayerJournalScreen} from '../screens/PrayerJournalScreen';
-import {ConfessionLibraryScreen} from '../screens/ConfessionLibraryScreen';
 import {MainTabParamList, RootStackParamList} from './types';
 import {colors} from '../theme/colors';
 import {typography} from '../theme/typography';
@@ -108,21 +105,6 @@ export function AppNavigator() {
             title: route.params?.teachingId ? 'Edit Teaching' : 'Add Teaching',
             presentation: 'modal',
           })}
-        />
-        <Stack.Screen
-          name="TeachingDetails"
-          component={TeachingDetailsScreen}
-          options={{title: 'Teaching Details'}}
-        />
-        <Stack.Screen
-          name="PrayerJournal"
-          component={PrayerJournalScreen}
-          options={{title: 'Prayer Journal', headerShown: false}}
-        />
-        <Stack.Screen
-          name="ConfessionLibrary"
-          component={ConfessionLibraryScreen}
-          options={{title: 'Confession Library', headerShown: false}}
         />
       </Stack.Navigator>
     </NavigationContainer>

@@ -13,6 +13,7 @@ import {useNavigation, useRoute, RouteProp} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useTeachings} from '../context/TeachingContext';
 import {FormField} from '../components/FormField';
+import {DatePickerField} from '../components/DatePickerField';
 import {Button} from '../components/Button';
 import {RootStackParamList} from '../navigation/types';
 import {TeachingInput} from '../types/teaching';
@@ -28,11 +29,10 @@ const emptyForm = (): TeachingInput => ({
   title: '',
   pastorName: '',
   date: todayISO(),
-  scriptureReferences: '',
-  mainNotes: '',
+  scriptureReference: '',
+  mainTeachingNotes: '',
   prayer: '',
   confession: '',
-  declaration: '',
   isFavorite: false,
 });
 
@@ -54,11 +54,10 @@ export function AddTeachingScreen() {
           title: existing.title,
           pastorName: existing.pastorName,
           date: existing.date,
-          scriptureReferences: existing.scriptureReferences,
-          mainNotes: existing.mainNotes,
+          scriptureReference: existing.scriptureReference,
+          mainTeachingNotes: existing.mainTeachingNotes,
           prayer: existing.prayer,
           confession: existing.confession,
-          declaration: existing.declaration,
           isFavorite: existing.isFavorite,
         });
       }
@@ -82,11 +81,10 @@ export function AddTeachingScreen() {
     try {
       if (isEditing && teachingId) {
         await updateTeaching(teachingId, form);
-        navigation.goBack();
       } else {
-        const created = await addTeaching(form);
-        navigation.replace('TeachingDetails', {teachingId: created.id});
+        await addTeaching(form);
       }
+      navigation.goBack();
     } catch {
       Alert.alert('Error', 'Could not save teaching. Please try again.');
     } finally {
@@ -119,23 +117,23 @@ export function AddTeachingScreen() {
           onChangeText={text => updateField('pastorName', text)}
           placeholder="Who preached this message?"
         />
-        <FormField
+        <DatePickerField
           label="Date"
+          required
           value={form.date}
-          onChangeText={text => updateField('date', text)}
-          placeholder="YYYY-MM-DD"
+          onChange={date => updateField('date', date)}
         />
         <FormField
-          label="Scripture References"
-          value={form.scriptureReferences}
-          onChangeText={text => updateField('scriptureReferences', text)}
+          label="Scripture Reference"
+          value={form.scriptureReference}
+          onChangeText={text => updateField('scriptureReference', text)}
           placeholder="e.g. John 3:16, Romans 8:28"
         />
         <FormField
           label="Main Teaching Notes"
           multiline
-          value={form.mainNotes}
-          onChangeText={text => updateField('mainNotes', text)}
+          value={form.mainTeachingNotes}
+          onChangeText={text => updateField('mainTeachingNotes', text)}
           placeholder="Key points, insights, and revelations..."
         />
         <FormField
@@ -151,13 +149,6 @@ export function AddTeachingScreen() {
           value={form.confession}
           onChangeText={text => updateField('confession', text)}
           placeholder="Faith confessions to declare..."
-        />
-        <FormField
-          label="Declaration"
-          multiline
-          value={form.declaration}
-          onChangeText={text => updateField('declaration', text)}
-          placeholder="Prophetic declarations..."
         />
 
         <View style={styles.favoriteRow}>

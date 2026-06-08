@@ -1,6 +1,6 @@
-import React, {useMemo} from 'react';
+import React from 'react';
 import {
-  ScrollView,
+  Alert,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -10,11 +10,7 @@ import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useTeachings} from '../context/TeachingContext';
-import {HeroCard} from '../components/HeroCard';
-import {QuickAction, QuickActionsRow} from '../components/QuickAction';
-import {SectionHeader} from '../components/SectionHeader';
-import {TeachingCard} from '../components/TeachingCard';
-import {EmptyState} from '../components/EmptyState';
+import {TeachingList} from '../components/TeachingList';
 import {RootStackParamList} from '../navigation/types';
 import {colors} from '../theme/colors';
 import {spacing} from '../theme/spacing';
@@ -22,117 +18,43 @@ import {typography} from '../theme/typography';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-const TAGLINE = "Capture • Preserve • Grow Through God's Word";
-
 export function HomeScreen() {
   const navigation = useNavigation<NavigationProp>();
   const insets = useSafeAreaInsets();
-  const {
-    teachings,
-    recentTeachings,
-    confessionEntries,
-    toggleFavorite,
-  } = useTeachings();
+  const {teachings, toggleFavorite, deleteTeaching} = useTeachings();
 
-  const dailyConfession = useMemo(() => {
-    if (confessionEntries.length === 0) {
-      return null;
-    }
-    const dayIndex = new Date().getDate() % confessionEntries.length;
-    const entry = confessionEntries[dayIndex];
-    const text = entry.confession.trim() || entry.declaration.trim();
-    if (!text) {
-      return null;
-    }
-    return {
-      text,
-      source: entry.teachingTitle,
-    };
-  }, [confessionEntries]);
+  const handleDelete = (id: string) => {
+    Alert.alert(
+      'Delete Teaching',
+      'Are you sure you want to permanently delete this teaching?',
+      [
+        {text: 'Cancel', style: 'cancel'},
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => deleteTeaching(id),
+        },
+      ],
+    );
+  };
 
   return (
     <View style={[styles.container, {paddingTop: insets.top}]}>
-      <ScrollView
-        contentContainerStyle={styles.scroll}
-        showsVerticalScrollIndicator={false}>
-        <HeroCard
-          tagline={TAGLINE}
-          confession={dailyConfession?.text}
-          confessionSource={dailyConfession?.source}
-        />
+      <View style={styles.header}>
+        <Text style={styles.title}>Biblical Journal</Text>
+        <Text style={styles.subtitle}>
+          {teachings.length} teaching{teachings.length !== 1 ? 's' : ''} saved
+        </Text>
+      </View>
 
-        <QuickActionsRow>
-          <QuickAction
-            icon="📝"
-            label="Add Teaching"
-            color="#E8F0F4"
-            onPress={() => navigation.navigate('AddTeaching')}
-          />
-          <QuickAction
-            icon="🙏"
-            label="Prayer Journal"
-            color={colors.successBg}
-            onPress={() => navigation.navigate('PrayerJournal')}
-          />
-          <QuickAction
-            icon="📖"
-            label="Confessions"
-            color="#F5F0E6"
-            onPress={() => navigation.navigate('ConfessionLibrary')}
-          />
-        </QuickActionsRow>
-
-        <View style={styles.statsRow}>
-          <View style={styles.statCard}>
-            <Text style={styles.statNumber}>{teachings.length}</Text>
-            <Text style={styles.statLabel}>Teachings</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statNumber}>
-              {teachings.filter(t => t.isFavorite).length}
-            </Text>
-            <Text style={styles.statLabel}>Favorites</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statNumber}>
-              {teachings.filter(t => t.prayer.trim()).length}
-            </Text>
-            <Text style={styles.statLabel}>Prayers</Text>
-          </View>
-        </View>
-
-        <SectionHeader
-          title="Recent Teachings"
-          actionLabel={teachings.length > 0 ? 'Search All' : undefined}
-          onAction={
-            teachings.length > 0
-              ? () =>
-                  navigation.navigate('MainTabs', {screen: 'Search'} as never)
-              : undefined
-          }
-        />
-
-        {recentTeachings.length === 0 ? (
-          <EmptyState
-            icon="📜"
-            title="No teachings yet"
-            message="Tap Add Teaching to capture your first sermon notes and grow through God's Word."
-          />
-        ) : (
-          recentTeachings.map(teaching => (
-            <TeachingCard
-              key={teaching.id}
-              teaching={teaching}
-              onPress={() =>
-                navigation.navigate('TeachingDetails', {
-                  teachingId: teaching.id,
-                })
-              }
-              onToggleFavorite={() => toggleFavorite(teaching.id)}
-            />
-          ))
-        )}
-      </ScrollView>
+      <TeachingList
+        teachings={teachings}
+        onPress={teaching =>
+          navigation.navigate('AddTeaching', {teachingId: teaching.id})
+        }
+        onToggleFavorite={toggleFavorite}
+        onDelete={handleDelete}
+      />
 
       <TouchableOpacity
         style={[styles.fab, {bottom: insets.bottom + 16}]}
@@ -149,49 +71,36 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  scroll: {
-    padding: spacing.lg,
-    paddingBottom: 100,
+  header: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.md,
   },
-  statsRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: spacing.md,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-  },
-  statNumber: {
-    ...typography.h2,
+  title: {
+    ...typography.h1,
     color: colors.primary,
+    marginBottom: spacing.xs,
   },
-  statLabel: {
-    ...typography.caption,
-    marginTop: 2,
+  subtitle: {
+    ...typography.bodySmall,
+    color: colors.textMuted,
   },
   fab: {
     position: 'absolute',
     right: spacing.xl,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 58,
+    height: 58,
+    borderRadius: 29,
     backgroundColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: colors.shadow,
     shadowOffset: {width: 0, height: 4},
     shadowOpacity: 1,
-    shadowRadius: 8,
+    shadowRadius: 10,
     elevation: 6,
   },
   fabIcon: {
-    fontSize: 28,
+    fontSize: 30,
     color: colors.primaryDark,
     fontWeight: '300',
     marginTop: -2,

@@ -1,4 +1,4 @@
-package com.kingdomnotes.app;
+package com.prince.biblicaljournal;
 
 import com.getcapacitor.BridgeActivity;
 

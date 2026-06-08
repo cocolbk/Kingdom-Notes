@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Teaching} from '../types/teaching';
 
-const STORAGE_KEY = '@kingdom_notes/teachings';
+const STORAGE_KEY = '@biblical_journal/teachings';
 
 export async function loadTeachings(): Promise<Teaching[]> {
   try {
