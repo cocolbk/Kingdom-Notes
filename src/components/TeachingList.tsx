@@ -1,5 +1,5 @@
 import React from 'react';
-import {FlatList, StyleSheet, View} from 'react-native';
+import {FlatList, StyleSheet} from 'react-native';
 import {Teaching} from '../types/teaching';
 import {TeachingCard} from './TeachingCard';
 import {EmptyState} from './EmptyState';
@@ -26,10 +26,11 @@ export function TeachingList({
 }: TeachingListProps) {
   return (
     <FlatList
+      style={styles.list}
       data={teachings}
       keyExtractor={item => item.id}
       contentContainerStyle={[
-        styles.list,
+        styles.content,
         {paddingBottom: contentPaddingBottom},
         teachings.length === 0 && styles.emptyList,
       ]}
@@ -52,11 +53,15 @@ export function TeachingList({
 
 const styles = StyleSheet.create({
   list: {
+    flex: 1,
+    width: '100%',
+  },
+  content: {
     paddingHorizontal: spacing.lg,
     flexGrow: 1,
   },
   emptyList: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'center',
   },
 });

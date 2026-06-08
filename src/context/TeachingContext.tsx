@@ -28,8 +28,8 @@ interface TeachingContextValue {
 const TeachingContext = createContext<TeachingContextValue | null>(null);
 
 export function TeachingProvider({children}: {children: React.ReactNode}) {
-  const [teachings, setTeachings] = useState<Teaching[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [teachings, setTeachings] = useState<Teaching[]>(SAMPLE_TEACHINGS);
+  const [isLoading, setIsLoading] = useState(false);
 
   const persist = useCallback(async (next: Teaching[]) => {
     const sorted = sortByDateDesc(next);

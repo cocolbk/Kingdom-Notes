@@ -14,6 +14,9 @@ if (keystorePropertiesFile.exists()) {
  * By default you don't need to apply any configuration, just uncomment the lines you need.
  */
 react {
+    // Hermes is required for reliable JS bundle execution on Android.
+    hermesEnabled = true
+
     /* Folders */
     //   The root of your project, i.e. where "package.json" lives. Default is '../..'
     // root = file("../../")

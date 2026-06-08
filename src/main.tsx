@@ -5,6 +5,8 @@ import {StatusBar, Style} from '@capacitor/status-bar';
 import App from '../App';
 import {name as appName} from '../app.json';
 
+console.log('main.tsx loaded');
+
 async function initNativeShell() {
   if (!Capacitor.isNativePlatform()) {
     return;

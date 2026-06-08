@@ -1,10 +1,8 @@
 import React from 'react';
 import {Text} from 'react-native';
-import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {useTeachings} from '../context/TeachingContext';
-import {LoadingScreen} from '../components/LoadingScreen';
 import {HomeScreen} from '../screens/HomeScreen';
 import {SearchScreen} from '../screens/SearchScreen';
 import {FavoritesScreen} from '../screens/FavoritesScreen';
@@ -78,35 +76,27 @@ function MainTabs() {
 }
 
 export function AppNavigator() {
-  const {isLoading} = useTeachings();
-
-  if (isLoading) {
-    return <LoadingScreen />;
-  }
-
   return (
-    <NavigationContainer>
-      <Stack.Navigator
-        screenOptions={{
-          headerStyle: {backgroundColor: colors.primary},
-          headerTintColor: colors.white,
-          headerTitleStyle: {...typography.h3, color: colors.white},
-          contentStyle: {backgroundColor: colors.background},
-        }}>
-        <Stack.Screen
-          name="MainTabs"
-          component={MainTabs}
-          options={{headerShown: false}}
-        />
-        <Stack.Screen
-          name="AddTeaching"
-          component={AddTeachingScreen}
-          options={({route}) => ({
-            title: route.params?.teachingId ? 'Edit Teaching' : 'Add Teaching',
-            presentation: 'modal',
-          })}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: {backgroundColor: colors.primary},
+        headerTintColor: colors.white,
+        headerTitleStyle: {...typography.h3, color: colors.white},
+        contentStyle: {backgroundColor: colors.background, flex: 1},
+      }}>
+      <Stack.Screen
+        name="MainTabs"
+        component={MainTabs}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="AddTeaching"
+        component={AddTeachingScreen}
+        options={({route}) => ({
+          title: route.params?.teachingId ? 'Edit Teaching' : 'Add Teaching',
+          presentation: 'modal',
+        })}
+      />
+    </Stack.Navigator>
   );
 }
