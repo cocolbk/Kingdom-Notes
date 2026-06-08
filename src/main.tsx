@@ -1,4 +1,5 @@
 ﻿import {AppRegistry, Platform} from 'react-native';
+import {enableScreens} from 'react-native-screens';
 import {Capacitor} from '@capacitor/core';
 import {SplashScreen} from '@capacitor/splash-screen';
 import {StatusBar, Style} from '@capacitor/status-bar';
@@ -6,6 +7,9 @@ import App from '../App';
 import {name as appName} from '../app.json';
 
 console.log('main.tsx loaded');
+
+// react-native-screens breaks layout in Capacitor WebView — disable it.
+enableScreens(false);
 
 async function initNativeShell() {
   if (!Capacitor.isNativePlatform()) {

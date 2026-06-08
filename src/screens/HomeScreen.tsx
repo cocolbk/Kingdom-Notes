@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   Alert,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -9,8 +10,7 @@ import {
 import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {useTeachings} from '../context/TeachingContext';
-import {TeachingList} from '../components/TeachingList';
+import {TeachingCard} from '../components/TeachingCard';
 import {RootStackParamList} from '../navigation/types';
 import {Teaching} from '../types/teaching';
 import {colors} from '../theme/colors';
@@ -70,46 +70,43 @@ const SAMPLE_TEACHINGS: Teaching[] = [
 export function HomeScreen() {
   const navigation = useNavigation<NavigationProp>();
   const insets = useSafeAreaInsets();
-  const {teachings, toggleFavorite, deleteTeaching} = useTeachings();
-
-  const displayTeachings =
-    teachings.length > 0 ? teachings : SAMPLE_TEACHINGS;
 
   const handleDelete = (id: string) => {
-    Alert.alert(
-      'Delete Teaching',
-      'Are you sure you want to permanently delete this teaching?',
-      [
-        {text: 'Cancel', style: 'cancel'},
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => deleteTeaching(id),
-        },
-      ],
-    );
+    Alert.alert('Delete Teaching', 'Remove this teaching?', [
+      {text: 'Cancel', style: 'cancel'},
+      {text: 'Delete', style: 'destructive'},
+    ]);
   };
 
+  const teachings = SAMPLE_TEACHINGS;
+
   return (
-    <View style={[styles.container, {paddingTop: insets.top}]}>
+    <>
+      {console.log('Teachings data:', teachings)}
+      <View style={[styles.container, {paddingTop: insets.top}]}>
       <View style={styles.header}>
         <Text style={styles.title}>Biblical Journal</Text>
         <Text style={styles.subtitle}>
-          {displayTeachings.length} teaching
-          {displayTeachings.length !== 1 ? 's' : ''} saved
+          {SAMPLE_TEACHINGS.length} teachings saved
         </Text>
       </View>
 
-      <View style={styles.listContainer}>
-        <TeachingList
-          teachings={displayTeachings}
-          onPress={teaching =>
-            navigation.navigate('AddTeaching', {teachingId: teaching.id})
-          }
-          onToggleFavorite={toggleFavorite}
-          onDelete={handleDelete}
-        />
-      </View>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}>
+        {SAMPLE_TEACHINGS.map(teaching => (
+          <TeachingCard
+            key={teaching.id}
+            teaching={teaching}
+            onPress={() =>
+              navigation.navigate('AddTeaching', {teachingId: teaching.id})
+            }
+            onToggleFavorite={() => {}}
+            onLongPress={() => handleDelete(teaching.id)}
+          />
+        ))}
+      </ScrollView>
 
       <TouchableOpacity
         style={[styles.fab, {bottom: insets.bottom + 16}]}
@@ -118,6 +115,7 @@ export function HomeScreen() {
         <Text style={styles.fabIcon}>+</Text>
       </TouchableOpacity>
     </View>
+    </>
   );
 }
 
@@ -139,9 +137,12 @@ const styles = StyleSheet.create({
     ...typography.bodySmall,
     color: colors.textMuted,
   },
-  listContainer: {
+  scroll: {
     flex: 1,
-    minHeight: 0,
+  },
+  scrollContent: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: 100,
   },
   fab: {
     position: 'absolute',

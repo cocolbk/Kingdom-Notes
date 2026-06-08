@@ -13,7 +13,7 @@
     "cap:open:android": "npx cap open android",
     "build:android": "npm run cap:sync && cd android-cap && gradlew.bat assembleRelease",
     "build:android:debug": "npm run cap:sync && cd android-cap && gradlew.bat assembleDebug",
-    "bundle:android:debug": "npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res"
+    "build:native:debug": "npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res && cd android && gradlew.bat assembleDebug"
   },
   "dependencies": {
     "@capacitor/android": "^6.2.0",
